@@ -4,7 +4,9 @@
 > implementation. Traces to frozen [problem-and-spec.md](problem-and-spec.md) v1.0,
 > [clarifications.md](clarifications.md) (41/41 resolved), and [test-cases.md](test-cases.md) (98 scenarios).
 >
-> **Status:** Step 1 complete. All 98 scenarios are written and running; 12 pass, 86 fail.
+> **Status:** Steps 1–3 complete. 70 / 98 scenarios green. Sections A, B, C, D, E and G are fully
+> green — the rules engine and validator are done, with **zero file I/O written so far**.
+> Remaining failures are Step 4 (CSV loading) and Step 5 (report and CLI).
 > Tests were authored **before** any implementation, so none of them can have been fitted to code.
 
 ---
@@ -148,11 +150,18 @@ cmake -S . -B build && cmake --build build && ./build/run_tests
 Scenario Outlines are single scenarios that loop over their Examples table, keeping the count at
 the document's 98 rather than the 112 expanded rows.
 
-**Caveat on the red baseline.** 12 scenarios pass against empty stubs because they assert an
-*absence* — no errors, no pending rows, an empty shelf map — which a stub satisfies trivially.
-`TC-111` and `TC-121` are the sharpest cases: they expect exit 2, and the unimplemented CLI exits 2
-for every input. They become meaningful only once their siblings are green, and are not evidence
-of anything today.
+**Caveat on vacuous passes.** At the Step 1 baseline, 12 scenarios passed against empty stubs
+because they assert an *absence* — no errors, no pending rows, an empty shelf map — which a stub
+satisfies trivially. Step 2 unmasked four of them: `TC-033` flipped pass → **fail** the moment the
+engine started producing the outcomes that the still-missing `V-10` gate is supposed to suppress,
+and `TC-004`, `TC-065`, `TC-080` became genuine. Eight remain vacuous — `TC-023`, `TC-035`,
+`TC-036`, `TC-037` (they read "valid", and `validate()` still returns nothing), `TC-091`, `TC-092`
+(the shelf map is still an empty stub), and `TC-111`, `TC-121` (they expect exit 2, and the
+unimplemented CLI exits 2 for every input). Track this column, not just the total.
+>
+> Step 3 resolved four more: `TC-023`, `TC-035`, `TC-036` and `TC-037` now read "valid" from a real
+> validator. Four remain vacuous — `TC-091`, `TC-092`, `TC-111`, `TC-121` — so the honest count at
+> 70 green is **66 genuinely proven**.
 
 ## Order rationale
 
