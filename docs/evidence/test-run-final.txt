@@ -1,0 +1,127 @@
+
+[2mA. Acceptance Criteria[0m
+  [32mPASS[0m TC_001  The built-in log runs in one action
+  [32mPASS[0m TC_002  Correcting E03's pickup code collects P01
+  [32mPASS[0m TC_003  E06 reusing an active code collides
+  [32mPASS[0m TC_004  An empty event table is valid
+  [32mPASS[0m TC_005  A duplicate event ID suppresses the whole run
+  [32mPASS[0m TC_006  Processing follows row order, not event-ID order
+
+[2mB. Validation - Structural[0m
+  [32mPASS[0m TC_010  An empty event ID is rejected
+  [32mPASS[0m TC_011  An empty parcel ID is rejected
+  [32mPASS[0m TC_012  Duplicate detection is case-insensitive
+  [32mPASS[0m TC_013  The later occurrence is flagged, not the first
+  [32mPASS[0m TC_014  A triplicate ID flags both later rows
+  [32mPASS[0m TC_015  Only ARRIVE and COLLECT are valid actions
+  [32mPASS[0m TC_016  The action is trimmed and uppercased
+  [32mPASS[0m TC_017  A pickup code must be exactly four alphanumerics
+  [32mPASS[0m TC_018  A lowercase pickup code is uppercased, not rejected
+  [32mPASS[0m TC_019  Normalization applies to both sides of a code comparison
+  [32mPASS[0m TC_020  An empty code on ARRIVE is INVALID_EVENT
+  [32mPASS[0m TC_021  An empty code on COLLECT is INVALID_EVENT
+  [32mPASS[0m TC_022  ARRIVE requires student and shelf
+  [32mPASS[0m TC_023  COLLECT does not require student or shelf
+  [32mPASS[0m TC_024  Student and shelf on a COLLECT row are ignored entirely
+  [32mPASS[0m TC_025  A well-formed but wrong COLLECT code passes validation
+  [32mPASS[0m TC_026  A whitespace-only required field is empty after trimming
+  [32mPASS[0m TC_027  Surrounding whitespace is trimmed from every field
+  [32mPASS[0m TC_028  Precedence - blank event ID outranks a malformed code
+  [32mPASS[0m TC_029  Precedence - an invalid action outranks a blank parcel ID
+  [32mPASS[0m TC_030  Precedence - a malformed code outranks a duplicate event ID
+  [32mPASS[0m TC_031  Precedence - a blank parcel ID outranks a missing shelf
+  [32mPASS[0m TC_032  Every offending row is reported, one error each
+  [32mPASS[0m TC_033  A structural error produces no partial results
+  [32mPASS[0m TC_034  A failed run clears output from an earlier successful run
+  [32mPASS[0m TC_035  A repeated parcel ID is legal input
+  [32mPASS[0m TC_036  Student names and shelf labels have no length limit
+  [32mPASS[0m TC_037  A shelf label has no required format
+  [32mPASS[0m TC_038  Non-ASCII names are accepted and preserved
+  [32mPASS[0m TC_039  Student and shelf casing is preserved, not uppercased
+  [32mPASS[0m TC_040  Precedence - a blank event ID outranks an invalid action
+  [32mPASS[0m TC_041  Precedence - a missing required field outranks a malformed code
+
+[2mC. Processing - ARRIVE[0m
+  [32mPASS[0m TC_050  A clean arrival is accepted
+  [32mPASS[0m TC_051  A repeat arrival of a pending parcel is rejected
+  [32mPASS[0m TC_052  A parcel that was collected is still seen
+  [32mPASS[0m TC_053  An arrival reusing an active code is rejected
+  [32mPASS[0m TC_054  A collected parcel's code is freed for reuse
+  [32mPASS[0m TC_055  A rejected arrival does not mark the parcel as seen
+  [32mPASS[0m TC_056  Seen is checked before collision
+  [32mPASS[0m TC_057  A rejected arrival changes no state at all
+  [32mPASS[0m TC_058  Parcel ID case-folding mirrors event ID case-folding
+  [32mPASS[0m TC_059  A collect matches a differently-cased parcel ID
+
+[2mD. Processing - COLLECT[0m
+  [32mPASS[0m TC_060  A correct code collects the parcel
+  [32mPASS[0m TC_061  A wrong code leaves the parcel pending
+  [32mPASS[0m TC_062  Collecting a parcel that never arrived is rejected
+  [32mPASS[0m TC_063  Collecting the same parcel twice is rejected the second time
+  [32mPASS[0m TC_064  A code belonging to another pending parcel does not collect it
+  [32mPASS[0m TC_065  Two pending parcels can never share a code
+  [32mPASS[0m TC_066  A state rejection does not stop later events
+  [32mPASS[0m TC_067  The rejected count sums all four rejection outcomes
+  [32mPASS[0m TC_068  Each event yields exactly one outcome
+
+[2mE. Ordering[0m
+  [32mPASS[0m TC_070  Outcomes are listed in source order
+  [32mPASS[0m TC_071  Pending parcels list by arrival order, not ID or shelf order
+  [32mPASS[0m TC_072  A collection does not disturb the order of the remaining parcels
+  [32mPASS[0m TC_073  Collected parcels list by collection order
+
+[2mF. Run, Report and CLI[0m
+  [32mPASS[0m TC_080  Consecutive runs do not leak state
+  [32mPASS[0m TC_081  One command performs the whole handover
+  [32mPASS[0m TC_082  Reset restores the built-in log and clears results
+  [32mPASS[0m TC_083  A successful run states that it is valid
+  [32mPASS[0m TC_084  The pending board carries everything needed for handover
+  [32mPASS[0m TC_085  Collected parcels are shown in their own section
+  [32mPASS[0m TC_086  The report is written to markdown and summarised on the console
+  [32mPASS[0m TC_087  The report always matches the current input
+  [32mPASS[0m TC_088  Input is read from CSV
+  [32mPASS[0m TC_089  An empty log produces a well-formed empty report
+  [32mPASS[0m TC_090  The shelf map is grouped from the final pending state
+  [32mPASS[0m TC_091  The shelf map excludes collected parcels
+  [32mPASS[0m TC_092  The shelf map is empty when nothing is pending
+  [32mPASS[0m TC_093  Several parcels on one shelf group together
+
+[2mG. Data-Structure Invariants[0m
+  [32mPASS[0m TC_100  A rejected arrival is never appended to the parcel store
+  [32mPASS[0m TC_101  A collected parcel stays in the store
+  [32mPASS[0m TC_102  Collection preserves a parcel's position in the store
+  [32mPASS[0m TC_103  A run clears the store and the collection counter
+
+[2mH. CSV, Exit Codes and Output[0m
+  [32mPASS[0m TC_110  The exact header is accepted
+  [32mPASS[0m TC_111  A bad header is an I/O error, not a validation failure
+  [32mPASS[0m TC_112  A trailing blank line is skipped
+  [32mPASS[0m TC_113  A blank interior line is skipped
+  [32mPASS[0m TC_114  A row of empty fields is an event, not a blank line
+  [32mPASS[0m TC_115  A wrong column count is reported per row
+  [32mPASS[0m TC_116  CRLF line endings are accepted
+  [32mPASS[0m TC_117  A UTF-8 BOM is stripped
+  [32mPASS[0m TC_118  A quoted field may contain a comma
+  [32mPASS[0m TC_119  A doubled quote inside a quoted field is one literal quote
+  [32mPASS[0m TC_120  A missing input file exits 2
+  [32mPASS[0m TC_121  An unreadable input file exits 2
+  [32mPASS[0m TC_122  A structural validation failure exits 1
+  [32mPASS[0m TC_123  A run with state rejections still exits 0
+  [32mPASS[0m TC_124  The report is written to the default path
+  [32mPASS[0m TC_125  An existing report is overwritten silently
+  [32mPASS[0m TC_126  The output path can be overridden
+  [32mPASS[0m TC_127  Reset creates the CSV if it is absent
+  [32mPASS[0m TC_128  Reset deletes a stale report
+
+[2m------------------------------------------------------------[0m
+  A. Acceptance Criteria              6 / 6 
+  B. Validation - Structural         32 / 32
+  C. Processing - ARRIVE             10 / 10
+  D. Processing - COLLECT             9 / 9 
+  E. Ordering                         4 / 4 
+  F. Run, Report and CLI             14 / 14
+  G. Data-Structure Invariants        4 / 4 
+  H. CSV, Exit Codes and Output      19 / 19
+[2m------------------------------------------------------------[0m
+  [32m98 passed[0m, [2m0 failed[0m, 98 total
+

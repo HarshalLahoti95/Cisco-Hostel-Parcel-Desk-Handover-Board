@@ -1,0 +1,7 @@
+event_id,action,parcel_id,student,pickup_code,shelf
+E01,ARRIVE,P01,Asha,K7M2,A1
+E02,ARRIVE,P02,Bilal,R4Q8,B1
+E03,COLLECT,P01,,ZZZZ,
+E04,ARRIVE,P03,Chen,T9C4,A2
+E05,COLLECT,P02,,R4Q8,
+E06,ARRIVE,P04,Divya,H2N6,B2

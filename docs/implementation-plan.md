@@ -143,9 +143,12 @@ tests describe the document rather than the code.
 
 ```
 cmake -S . -B build && cmake --build build && ./build/run_tests
-./build/run_tests TC-055        # one scenario
+./build/run_tests TC-055        # one scenario   (TC_055 also accepted)
 ./build/run_tests "C. Proc"     # one section
 ```
+
+Scenario ids are displayed and filtered in the document's `TC-055` form, even though the
+`SCENARIO` macro must spell them `TC_055` to form a C++ identifier.
 
 Scenario Outlines are single scenarios that loop over their Examples table, keeping the count at
 the document's 98 rather than the 112 expanded rows.

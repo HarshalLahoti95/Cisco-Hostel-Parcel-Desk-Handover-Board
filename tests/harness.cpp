@@ -27,7 +27,22 @@ void fail(const char* file, int line, const std::string& what) {
     throw Failure{os.str()};
 }
 
-void registerTest(const TestCase& tc) { registry().push_back(tc); }
+namespace {
+// The SCENARIO macro must spell ids with underscores to form a C++ identifier,
+// but docs/test-cases.md spells them TC-001. Display and filter on the
+// document's form so the two never have to be translated by hand.
+std::string docId(std::string id) {
+    for (char& c : id)
+        if (c == '_') c = '-';
+    return id;
+}
+}  // namespace
+
+void registerTest(const TestCase& tc) {
+    TestCase copy = tc;
+    copy.id = docId(tc.id);
+    registry().push_back(copy);
+}
 
 int runAll(int argc, char** argv) {
     std::string filter;
@@ -46,8 +61,9 @@ int runAll(int argc, char** argv) {
     std::map<std::string, std::pair<int, int>> bySection;  // section -> {pass, total}
 
     for (const auto& tc : tests) {
+        const std::string needle = docId(filter);
         if (!filter.empty() &&
-            tc.id.find(filter) == std::string::npos &&
+            tc.id.find(needle) == std::string::npos &&
             tc.section.find(filter) == std::string::npos) {
             ++skipped;
             continue;
