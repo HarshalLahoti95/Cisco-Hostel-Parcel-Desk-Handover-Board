@@ -2,7 +2,8 @@
 
 > Traces to frozen [problem-and-spec.md](problem-and-spec.md) v1.0 and [clarifications.md](clarifications.md).
 > Every scenario names the spec IDs and CL decisions it proves. Coverage matrix at the end.
-> **94 scenarios** (112 expanded, counting Scenario Outline examples). No open decisions remain.
+> **98 scenarios** (112 expanded, counting Scenario Outline examples). No open decisions remain.
+> The `@`-tags on each scenario are authoritative; the coverage matrix is derived from them.
 
 ## Conventions
 
@@ -35,7 +36,7 @@ Scenario: TC-001 The built-in log runs in one action
   And the collected list is P02
   And the summary is 3 / 1 / 1
 
-@AC-2
+@AC-2 @U-1
 Scenario: TC-002 Correcting E03's pickup code collects P01
   Given the built-in event log
   And E03's pickup code is changed to "K7M2"
@@ -44,7 +45,7 @@ Scenario: TC-002 Correcting E03's pickup code collects P01
   And the pending board lists P03, P04 in that order
   And the summary is 2 / 2 / 0
 
-@AC-3 @P-4
+@AC-3 @P-4 @U-1
 Scenario: TC-003 E06 reusing an active code collides
   Given the built-in event log
   And E06's pickup code is changed to "T9C4"
@@ -54,7 +55,7 @@ Scenario: TC-003 E06 reusing an active code collides
   And the pending board lists P01, P03 in that order
   And the summary is 2 / 1 / 2
 
-@AC-4 @V-11 @CL-029
+@AC-4 @V-11 @CL-015 @CL-029
 Scenario: TC-004 An empty event table is valid
   Given an empty event table
   When I run the handover
@@ -200,7 +201,7 @@ Scenario: TC-025 A well-formed but wrong COLLECT code passes validation
   Then E03's code "ZZZZ" passes validation
   And E03 is rejected later at processing time as PICKUP_CODE_MISMATCH
 
-@V-1 @CL-005
+@V-1 @V-2 @V-3 @V-7 @CL-005
 Scenario Outline: TC-026 A whitespace-only required field is empty after trimming
   Given the built-in log with E01's <field> set to "   "
   Then validation reports INVALID_EVENT on field "<field>"
@@ -218,26 +219,36 @@ Scenario: TC-027 Surrounding whitespace is trimmed from every field
   Then validation reports VALID
   And the summary is 3 / 1 / 1
 
-@CL-010
+@V-2 @CL-010
 Scenario: TC-028 Precedence — a blank event ID outranks a malformed code
   Given an event row with a blank event ID and pickup code "XX"
   Then validation reports INVALID_EVENT on field "Event ID"
 
-@CL-010
+@V-5 @CL-010
 Scenario: TC-029 Precedence — an invalid action outranks a blank parcel ID
   Given an event row with action "SEND" and a blank parcel ID
   Then validation reports INVALID_EVENT on field "Action"
 
-@CL-010
+@V-4 @V-6 @CL-010
 Scenario: TC-030 Precedence — a malformed code outranks a duplicate event ID
   Given the built-in log with E06's event ID changed to "E05" and its code changed to "XX"
   Then validation reports INVALID_PICKUP_CODE on row 6
   And DUPLICATE_EVENT_ID is not reported for that row
 
-@CL-010
+@V-3 @CL-010
 Scenario: TC-031 Precedence — a blank parcel ID outranks a missing shelf
   Given an ARRIVE row with a blank parcel ID and a blank shelf
   Then validation reports INVALID_EVENT on field "Parcel ID"
+
+@CL-010
+Scenario: TC-040 Precedence — a blank event ID outranks an invalid action
+  Given an event row with a blank event ID and action "SEND"
+  Then validation reports INVALID_EVENT on field "Event ID"
+
+@CL-010
+Scenario: TC-041 Precedence — a missing required field outranks a malformed code
+  Given an ARRIVE row with a blank shelf and pickup code "XX"
+  Then validation reports INVALID_EVENT on field "Shelf"
 
 @V-9 @CL-009
 Scenario: TC-032 Every offending row is reported, one error each
@@ -366,6 +377,22 @@ Scenario: TC-057 A rejected arrival changes no state at all
   And the pending board has exactly 1 row
 ```
 
+@V-1 @CL-002 @P-3
+Scenario: TC-058 Parcel ID case-folding mirrors event ID case-folding
+  Given events: ARRIVE p01 code K7M2, then ARRIVE P01 code H2N6
+  When I run the handover
+  Then the second outcome is PARCEL_ALREADY_SEEN
+  And the pending board lists P01 once, with code K7M2
+  And the summary is 1 / 0 / 1
+
+@V-1 @CL-002 @P-6
+Scenario: TC-059 A collect matches a differently-cased parcel ID
+  Given events: ARRIVE P01 code K7M2, then COLLECT p01 code K7M2
+  When I run the handover
+  Then the second outcome is COLLECTED
+  And the collected list is P01
+  And the summary is 0 / 1 / 0
+
 ---
 
 ## D. Processing — COLLECT
@@ -432,7 +459,7 @@ Scenario: TC-067 The rejected count sums all four rejection outcomes
   When I run the handover
   Then the rejected count is 4
 
-@P-10 @CL-023
+@P-10 @U-3 @CL-023
 Scenario: TC-068 Each event yields exactly one outcome
   Given any valid event log of N events
   When I run the handover
@@ -518,14 +545,14 @@ Scenario: TC-086 The report is written to markdown and summarised on the console
   Then a markdown report file is written
   And a short summary is printed to the console
 
-@U-8 @CL-025
+@U-1 @U-8 @CL-025
 Scenario: TC-087 The report always matches the current input
   Given I have run the handover
   When I edit the CSV and run again
   Then the new report reflects only the edited input
   And no rows from the previous run remain
 
-@CL-031
+@U-1 @CL-031 @CL-032
 Scenario: TC-088 Input is read from CSV
   Given a CSV file containing the six built-in events
   When I run the handover
@@ -549,13 +576,13 @@ Scenario: TC-091 The shelf map excludes collected parcels
   When I run the handover
   Then shelf B1 is absent or empty, because P02 was collected
 
-@U-9
+@U-9 @CL-036
 Scenario: TC-092 The shelf map is empty when nothing is pending
   Given events: ARRIVE P01 code K7M2, COLLECT P01 code K7M2
   When I run the handover
   Then the shelf map is empty
 
-@U-9
+@U-9 @CL-036
 Scenario: TC-093 Several parcels on one shelf group together
   Given events: ARRIVE P01 shelf A1 code K7M2, ARRIVE P02 shelf A1 code R4Q8
   When I run the handover
@@ -743,8 +770,8 @@ Scenario: TC-128 Reset deletes a stale report
 | Spec ID | Scenarios |
 |---------|-----------|
 | `BL-1` `BL-2` `BL-3` | TC-001 |
-| `V-1` | TC-026, TC-027, TC-038, TC-039 |
-| `V-2` | TC-010, TC-026, TC-028 |
+| `V-1` | TC-026, TC-027, TC-038, TC-039, TC-058, TC-059 |
+| `V-2` | TC-010, TC-026, TC-028, TC-114 |
 | `V-3` | TC-011, TC-026, TC-031 |
 | `V-4` | TC-005, TC-012, TC-013, TC-014, TC-030, TC-035 |
 | `V-5` | TC-015, TC-016, TC-029 |
@@ -752,14 +779,14 @@ Scenario: TC-128 Reset deletes a stale report
 | `V-7` | TC-020, TC-022, TC-026, TC-036, TC-037 |
 | `V-8` | TC-021, TC-023, TC-024 |
 | `V-9` | TC-032 |
-| `V-10` | TC-033, TC-034 |
+| `V-10` | TC-033, TC-034, TC-122 |
 | `V-11` | TC-004, TC-089 |
 | `P-1` | TC-080, TC-103 |
 | `P-2` | TC-006 |
-| `P-3` | TC-051, TC-052, TC-055, TC-056, TC-057 |
+| `P-3` | TC-051, TC-052, TC-055, TC-056, TC-057, TC-058 |
 | `P-4` | TC-003, TC-053, TC-054, TC-055, TC-056, TC-057, TC-065 |
 | `P-5` | TC-050 |
-| `P-6` | TC-062, TC-063, TC-064 |
+| `P-6` | TC-059, TC-062, TC-063, TC-064 |
 | `P-7` | TC-061, TC-064 |
 | `P-8` | TC-054, TC-060 |
 | `P-9` | TC-066 |
@@ -767,27 +794,34 @@ Scenario: TC-128 Reset deletes a stale report
 | `O-1` | TC-006, TC-070 |
 | `O-2` | TC-071, TC-072, TC-102 |
 | `O-3` | TC-073 |
+| `U-1` | TC-002, TC-003, TC-087, TC-088 |
 | `U-2` | TC-081 |
 | `U-4` | TC-084 |
-| `U-5` | TC-085 |
 | `U-6` | TC-083 |
-| `U-7` | TC-082 |
+| `U-3` | TC-068 |
+| `U-5` | TC-085 |
+| `U-7` | TC-082, TC-127, TC-128 |
 | `U-8` | TC-087 |
 | `U-9` | TC-090, TC-091, TC-092, TC-093 |
-| `AC-1` – `AC-6` | TC-001 – TC-006 |
+| `AC-1` | TC-001, TC-081 |
+| `AC-2` | TC-002 |
+| `AC-3` | TC-003 |
+| `AC-4` | TC-004 |
+| `AC-5` | TC-005 |
+| `AC-6` | TC-006 |
 
 | Decision | Scenarios |
 |----------|-----------|
 | CL-001 | TC-018, TC-019 |
-| CL-002 | TC-012 |
+| CL-002 | TC-012, TC-058, TC-059 |
 | CL-003 | TC-016 |
 | CL-004 | TC-039 |
 | CL-005 | TC-026 |
 | CL-006 | TC-036 |
-| CL-007 | TC-037 |
+| CL-007 | TC-037, TC-118 |
 | CL-008 | TC-038 |
 | CL-009 | TC-032 |
-| CL-010 | TC-028, TC-029, TC-030, TC-031 |
+| CL-010 | TC-028, TC-029, TC-030, TC-031, TC-040, TC-041 |
 | CL-011 | TC-013, TC-014 |
 | CL-012 | TC-020, TC-021 |
 | CL-013 | TC-025 |
@@ -807,14 +841,25 @@ Scenario: TC-128 Reset deletes a stale report
 | CL-027 | TC-083 |
 | CL-028 | TC-085 |
 | CL-029 | TC-004, TC-089 |
-| CL-030, CL-031 | TC-088 |
+| CL-031 | TC-088 |
 | CL-032 | TC-088 |
 | CL-033 | TC-082 |
 | CL-034 | TC-081 |
 | CL-035 | TC-086 |
 | CL-036 | TC-090 – TC-093 |
-| CL-037 | the suite itself |
-| CL-038 | TC-100 – TC-103 |
+| CL-038 | TC-054, TC-100 – TC-103 |
 | CL-039 | TC-110 – TC-119 |
 | CL-040 | TC-111, TC-120 – TC-123 |
 | CL-041 | TC-124 – TC-128 |
+
+### Not directly testable
+
+These carry no scenario by design, and their absence above is deliberate rather than an omission.
+
+| ID | Why |
+|----|-----|
+| `SC-1` – `SC-4` | Scope and medium statements, not runtime behaviour |
+| `PR-1` – `PR-3` | Process requirements on how the work is carried out |
+| CL-030 | A language choice. No scenario can prove "this is C++" |
+| CL-033 – CL-035 | Delivery-shape mappings; their observable effects are covered by TC-082, TC-086, TC-124 – TC-128 |
+| CL-037 | Describes the suite itself |
