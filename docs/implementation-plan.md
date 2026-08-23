@@ -4,9 +4,9 @@
 > implementation. Traces to frozen [problem-and-spec.md](problem-and-spec.md) v1.0,
 > [clarifications.md](clarifications.md) (41/41 resolved), and [test-cases.md](test-cases.md) (98 scenarios).
 >
-> **Status:** Steps 1–3 complete. 70 / 98 scenarios green. Sections A, B, C, D, E and G are fully
-> green — the rules engine and validator are done, with **zero file I/O written so far**.
-> Remaining failures are Step 4 (CSV loading) and Step 5 (report and CLI).
+> **Status:** **Complete.** All five steps done; **98 / 98 scenarios green, none vacuous.**
+> `AC-1` – `AC-6` verified end to end against the built binary, with exit codes 0, 1 and 2 all
+> demonstrated.
 > Tests were authored **before** any implementation, so none of them can have been fitted to code.
 
 ---
@@ -160,8 +160,9 @@ and `TC-004`, `TC-065`, `TC-080` became genuine. Eight remain vacuous — `TC-02
 unimplemented CLI exits 2 for every input). Track this column, not just the total.
 >
 > Step 3 resolved four more: `TC-023`, `TC-035`, `TC-036` and `TC-037` now read "valid" from a real
-> validator. Four remain vacuous — `TC-091`, `TC-092`, `TC-111`, `TC-121` — so the honest count at
-> 70 green is **66 genuinely proven**.
+> validator. Step 4 resolved the parser half of `TC-111`. Step 5 resolved the last four — `TC-091`
+> and `TC-092` now read a real shelf map, and `TC-111` and `TC-121` a real CLI whose exit 2 is
+> earned rather than blanket. **At 98 green, none are vacuous.**
 
 ## Order rationale
 
@@ -178,3 +179,6 @@ Changes to this plan get recorded here with the reason, per `PR-3` ("explain cha
 |---|---|---|---|
 | 2026-08-23 | 1 | `handover.cpp` — the normalize → validate → gate → replay wiring — built in Step 1 rather than Step 3 | It is the composition root of the pure core and the seam every scenario calls. Without it the suite could not be written before implementation, which was the point. The `V-10` gate it contains stays unproven until Step 3 supplies a real `validate()`. |
 | 2026-08-23 | 1 | Step 1 checkpoint corrected: `TC-100` – `TC-103` moved to Step 2 | Those scenarios call `run()`, so they cannot go green until the engine exists. The original checkpoint was wrong. |
+| 2026-08-23 | 3 | CL-010's precedence ladder gained a step 0: `malformedRow` is checked before every field rule | A wrong column count means no field can be trusted. `TC-115` requires field `"Row"` on a row whose pickup code would otherwise read as blank and report `"Pickup code"`. |
+| 2026-08-23 | 5 | Shelf-map groups are ordered by the arrival of their first parcel, not alphabetically | `CL-036` states the grouping but no order. Deriving it from `O-2` avoids inventing a second ordering rule the spec never gave. |
+| 2026-08-23 | 5 | A validation failure still writes a report — one containing only the error table | `V-10` requires clearing output from an earlier run, and `CL-025` regenerates the report every run. An error-only report satisfies both; leaving a stale success report on disk would not. |
